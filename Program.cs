@@ -40,32 +40,23 @@ namespace EF_Mapping_Advanced
                     Console.WriteLine($"Id: {v.Id}, Name: {v.Name}, Departament: {(v as Manager)?.Departament ?? "NULL"}");
                 }
 
-                //void dataForThreads_1()
-                //{
-                //    var e = context.Find<Employee>(4);
-                //    e.Salary = 6000;
-                //    context.Update(e);                    
-                //}
-                //void dataForThreads_2()
-                //{
-                //    var f = context.Find<Employee>(4);
-                //    f.Salary = 10000;
-                //    context.Update(f);                    
-                //}
-                //using (var context1 = new ApplicationContext())
-                //{
-                //    Thread myThread_1 = new Thread(new ThreadStart(dataForThreads_1));
-                //    myThread_1.Start();                    
-                //}
-                //context.SaveChanges();
-
-                //using (var context2 = new ApplicationContext())
-                //{
-                //    Thread myThread_2 = new Thread(new ThreadStart(dataForThreads_2));
-                //    myThread_2.Start();
-                //}
-                //context.SaveChanges();
-
+                try
+                {
+                    var context1 = new ApplicationContext();
+                    var context2 = new ApplicationContext();
+                    var e = context1.Find<Employee>(4);
+                    var f = context2.Find<Employee>(4);
+                    e.Salary = 6000;
+                    context1.Update(e);
+                    context1.SaveChanges();
+                    f.Salary = 10000;
+                    context2.Update(f);
+                    context2.SaveChanges();
+                }
+                catch (DbUpdateConcurrencyException d)
+                {
+                    Console.WriteLine(d.Message);
+                }
                 var g = context.Find<Employee>(4);
                 Console.WriteLine("\nSalary is: " + g.Salary);
             }
@@ -94,11 +85,11 @@ namespace EF_Mapping_Advanced
     public class ApplicationContext : DbContext
     {
         public DbSet<User> Users { get; set; }
-        //public DbSet<Employee> Employees { get; set; }
-        //public DbSet<Manager> Managers { get; set; }
+        public DbSet<Employee> Employees { get; set; }
+        public DbSet<Manager> Managers { get; set; }
         public ApplicationContext()
         {
-            Database.EnsureDeleted();
+            //Database.EnsureDeleted();
             Database.EnsureCreated();
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -118,10 +109,9 @@ namespace EF_Mapping_Advanced
         {
             public void Configure(EntityTypeBuilder<Employee> builder)
             {
-                //builder.Property(x => x.RowVersion)
-                //    .IsRowVersion();
+                builder.Property(x => x.RowVersion)
+                    .IsRowVersion();
             }
         }
-
     }
 }
